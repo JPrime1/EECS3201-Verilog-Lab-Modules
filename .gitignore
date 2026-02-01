@@ -1,0 +1,4 @@
+*.qpf
+*.qsf
+db/
+incremental_db/
