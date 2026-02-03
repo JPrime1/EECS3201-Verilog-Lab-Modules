@@ -12,7 +12,7 @@ module Lab02 (
     assign val[3] = pr_en[3];*/
 
     //test instructions
-    assign [3:0] val = [3:0] SW;
+    assign val = [3:0] SW;
 
     seven_seg_decoder_bool display(.in(val), .seg(HEX0));
     //seven_seg_decoder(.in(val), .seg(HEX0));
