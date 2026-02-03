@@ -11,26 +11,33 @@ module seven_seg_decoder_bool(
     assign seg[7] = 1; //Turn OFF dp
 
     //based of kmaps for each segment
-	assign seg[0] = (~A & ~C) &
-                    ((~B | D) | (B | ~D));
+	assign seg[0] = (~A & ~B & ~C & D) |
+                    (~A & B & ~C & ~D) |
+                    (A & B & C & D);
 
     assign seg[1] = (~A & B) &
-                    ((~C | D) | (C | ~D));
+                    ((~C & D) | (C & ~D))|
+                    (A & B & C & D);
 
-    assign seg[2] = (~A & ~B & C & ~D);
+    assign seg[2] = (~A & ~B & C & ~D)|
+                    (A & B & C & D);
 
     assign seg[3] = (~B & ~C & D)|
                     (~A & B & ~C & ~D)|
-                    (~A & B & C & D);
+                    (~A & B & C & D)|
+                    (A & B & C & D);
     
-    assign seg[4] = (~A & B & C)|
+    assign seg[4] = (~A & B & ~C)|
                     (~A & D)|
-                    (~B & ~C & D);
+                    (~B & ~C & D)|
+                    (A & B & C & D);
 
     assign seg[5] = ((~A & ~B) & (C | D))|                    
-                    (~A & C & D);
+                    (~A & C & D)|
+                    (A & B & C & D);
 
-    assign seg[6] = (~A) &
-                    ((~B & ~C) | (B & C & D));
+    assign seg[6] = (~A & ~B & ~C)|
+                    (~A & B & C & D)|
+                    (A & B & C & D);
 	
 endmodule
