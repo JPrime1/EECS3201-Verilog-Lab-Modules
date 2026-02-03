@@ -1,9 +1,9 @@
 module Lab02 (
-    input [8:0] sw,
-	output [7:0] seg);
+    input [8:0] SW,
+	output [7:0] HEX0);
 
     wire [8:0] pr_en; //priority encoded input
-    priority_encoder encode(.in(sw), .en(pr_en));
+    priority_encoder encode(.in(SW), .en(pr_en));
 
     wire [3:0] val; //four bit value conversion
     assign val[0] = pr_en[0] | pr_en[1] | pr_en[6];
@@ -11,8 +11,8 @@ module Lab02 (
     assign val[2] = pr_en[0] | pr_en[1] | pr_en[2] | pr_en[5];
     assign val[3] = pr_en[3];
 
-    seven_seg_decoder_bool display(.in(val), .seg(seg));
-    //seven_seg_decoder(.in(val), .seg(seg));
+    seven_seg_decoder_bool display(.in(val), .seg(HEX0));
+    //seven_seg_decoder(.in(val), .seg(HEX0));
 
     
 endmodule
