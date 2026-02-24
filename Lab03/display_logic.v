@@ -13,7 +13,7 @@ module display_logic(
     assign a1_disp = a1;
 
     //quick display
-    seven_seg_decoder d5(.in(a0_disp), .seg(HEX5));
-    seven_seg_decoder d3(.in(a1_disp), .seg(HEX3));
+    seven_seg_decoder_bool d0 (.in(a0_disp), .seg(HEX0));
+    seven_seg_decoder_bool d2 (.in(a1_disp), .seg(HEX2));
 
 endmodule
