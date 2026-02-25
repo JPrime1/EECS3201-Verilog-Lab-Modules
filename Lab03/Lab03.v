@@ -7,8 +7,8 @@ module Lab03 (
     wire [3:0] a1;
     wire s;
 
-    assign a0 = SW[3:0];
-    assign a1 = SW[7:4];
+    assign a0 = SW[7:4];
+    assign a1 = SW[3:0];
     assign s  = SW[9];
 
     wire [3:0] F;
@@ -17,8 +17,8 @@ module Lab03 (
     display_logic disp (
         .a0(a0),
         .a1(a1),
-        .HEX0(HEX0),
-        .HEX2(HEX2),
+        .HEX5(HEX5),
+        .HEX3(HEX3),
     );
 
 endmodule

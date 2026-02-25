@@ -12,8 +12,19 @@ module display_logic(
     assign a0_disp = a0;
     assign a1_disp = a1;
 
-    //quick display
-    seven_seg_decoder_bool d0 (.in(a0_disp), .seg(HEX0));
-    seven_seg_decoder_bool d2 (.in(a1_disp), .seg(HEX2));
+    //DISPLAY LAYOUT
+    //HEX5 A0
+    hex_display_decoder d0 (.in(a0_disp), .hex_out(HEX5));
+
+    //HEX4 +/-
+    
+    //HEX3 A1
+    hex_display_decoder d2 (.in(a1_disp), .hex_out(HEX3));
+    
+    //HEX2 =
+    //HEX1 1/-
+    //HEX0 F (result)
+    
+    
 
 endmodule
