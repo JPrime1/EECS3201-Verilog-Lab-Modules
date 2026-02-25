@@ -15,10 +15,20 @@ module Lab03 (
     wire Cout;
 
     display_logic disp (
+        //DISPLAY LAYOUT
+        //HEX5 A0
         .a0(a0),
-        .a1(a1),
         .HEX5(HEX5),
-        .HEX3(HEX3),
+
+        //HEX4 +/-
+        
+        //HEX3 A1        
+        .a1(a1),
+        .HEX3(HEX3)
+
+        //HEX2 =        
+        //HEX1 1/-
+        //HEX0 F (result)                
     );
 
 endmodule
