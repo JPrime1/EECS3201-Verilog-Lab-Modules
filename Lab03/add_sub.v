@@ -13,7 +13,8 @@ module add_sub(
     // Dependent on switch behavior
     assign temp = s ? (a0 - a1) : (a0 + a1);
 
-    assign result   = temp[3:0];
-    assign carryOut = temp[4];        
+    assign carryOut = temp[4];  
+    assign result = (carryOut && s) ? ((~temp[3:0]) + 4'd1) : temp[3:0];    //if negative result and subtract, 2's complement
+          
 
 endmodule
