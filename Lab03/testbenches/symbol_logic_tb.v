@@ -6,22 +6,22 @@ module symbol_logic_tb;
     reg s;
     reg carryOut;
 
-    wire [7:0] HEX4;
-    wire [7:0] HEX2;
-    wire [7:0] HEX1;
+    wire [7:0] op;
+    wire [7:0] eq;
+    wire [7:0] prefix;
 
     // Instantiate DUT (Device Under Test)
     symbol_logic dut (
         .s(s),
         .carryOut(carryOut),
-        .HEX4(HEX4),
-        .HEX2(HEX2),
-        .HEX1(HEX1)
+        .op(op),
+        .eq(eq),
+        .prefix(prefix)
     );
 
     // Stimulus
     initial begin
-        $display("Time\t s\t carryOut\t HEX4\t HEX2\t HEX1");
+        $display("Time\t s\t carryOut\t op\t eq\t prefix");
 
         // Dump waveform for viewing in GTKWave / Quartus waveform viewer
         $dumpfile("symbol_logic_tb.vcd");
@@ -51,7 +51,7 @@ module symbol_logic_tb;
     // Optional monitoring
     initial begin
         $monitor("%0t\t %b\t %b\t %h\t %h\t %h",
-                 $time, s, carryOut, HEX4, HEX2, HEX1);
+                 $time, s, carryOut, op, eq, prefix);
     end
 
 endmodule
