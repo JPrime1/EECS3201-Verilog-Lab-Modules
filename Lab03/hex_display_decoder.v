@@ -1,6 +1,6 @@
 module hex_display_decoder(
-    input  [3:0] in,
-    output reg [7:0] hex_out
+    input  [3:0] in,            // 4-bit hexadecimal input (0–F)
+    output reg [7:0] hex_out    // 8-bit output for seven-segment display (a,b,c,d,e,f,g,dp)
 );
 
     // Combinational decoder for 4-bit hexadecimal input

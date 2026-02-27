@@ -1,9 +1,10 @@
 module add_sub(
-    input  [3:0] a0,        // 1st number
-    input  [3:0] a1,        // 2nd number
+    input  [3:0] a0,        // 4-bit input A0
+    input  [3:0] a1,        // 4-bit input A1
     input        s,         // 0 = add, 1 = subtract
-    output [3:0] result,
-    output       carryOut
+    
+    output [3:0] result,    // 4-bit result of addition/subtraction
+    output       carryOut   // Carry out from the addition/subtraction operation
     );
 
     // Setup Wiring
