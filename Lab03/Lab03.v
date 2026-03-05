@@ -1,3 +1,22 @@
+//============================================================
+// EECS 3201 – Lab 3
+// 4-Bit ALU with Six Digit Display
+//
+// Student Name: James Prime
+// Student Number: 215028657
+//
+// GitHub Repository:
+// https://github.com/JPrime1/EECS3201-Verilog-Lab-Modules.git
+//
+// Description:
+// This project implements a 4-bit ALU with multiple 7-segment displays. 
+// The ALU performs addition or subtraction based on the input switch, 
+// and the results are displayed on six 7-segment displays. 
+// The displays show the inputs, the operation symbol, the result, and the carry out status.
+//
+//============================================================
+
+
 module Lab03 (
     input  [9:0] SW,
     output [7:0] HEX0, HEX1, HEX2, HEX3, HEX4, HEX5
