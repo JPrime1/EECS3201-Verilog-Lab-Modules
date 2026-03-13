@@ -1,8 +1,8 @@
 module Lab04 (
     input  CLOCK_50,        // 50 MHz clock input
     input  [0:0] SW,        // SW0: Mode switch (0=24 sec, 1=30 sec)
-    input  [0:0] KEY0,      // KEY0: Pause toggle button
-    input  [0:0] KEY1,      // KEY1: Reset button
+    input  [1:0] KEY,       // KEY[0]: Pause toggle button
+                            // KEY[1]: Reset button
     output [7:0] HEX0, HEX1 // Seven-segment display outputs for ones and tens digits
 );
 
@@ -11,6 +11,21 @@ module Lab04 (
     wire [4:0] count;       // 5-bit count from ShotClockCounter
     wire [3:0] bcdTens;     // BCD tens digit
     wire [3:0] bcdOnes;     // BCD ones digit
+    wire pauseButton;       // Pulse from pause button
+    wire resetButton;       // Pulse from reset button
+
+    // Instantiate Button modules for pause and reset buttons
+    Button pauseBtn (
+        .clk(CLOCK_50),
+        .btn(KEY[0]),
+        .pulse(pauseButton)
+    );
+
+    Button resetBtn (
+        .clk(CLOCK_50),
+        .btn(KEY[1]),
+        .pulse(resetButton)
+    );
 
     // Instantiate ClockDivider to convert 50 MHz to 1 Hz
     ClockDivider clock (
@@ -21,8 +36,8 @@ module Lab04 (
     // Instantiate ShotClockCounter to manage the countdown logic
     ShotClockCounter counter (
         .clk(clk),
-        .pause(KEY0),
-        .reset(KEY1),
+        .pause(pauseButton),
+        .reset(resetButton),
         .mode(SW),
         .count(count)
     );
