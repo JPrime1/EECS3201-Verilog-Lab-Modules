@@ -7,7 +7,7 @@ module Lab04 (
 );
 
     // Wires to connect modules
-    wire clk;               // 1 Hz clock from ClockDivider
+    wire clockTick;         // 1 Hz tick from ClockDivider
     wire [4:0] count;       // 5-bit count from ShotClockCounter
     wire [3:0] bcdTens;     // BCD tens digit
     wire [3:0] bcdOnes;     // BCD ones digit
@@ -17,25 +17,26 @@ module Lab04 (
     // Instantiate Button modules for pause and reset buttons
     Button pauseBtn (
         .clk(CLOCK_50),
-        .btn(KEY[0]),
-        .pulse(pauseButton)
+        .btn(~KEY[0]),      // negate if you want active high
+        .pulse(pauseButton) 
     );
 
     Button resetBtn (
         .clk(CLOCK_50),
-        .btn(KEY[1]),
+        .btn(~KEY[1]),      // negate if you want active high
         .pulse(resetButton)
     );
 
     // Instantiate ClockDivider to convert 50 MHz to 1 Hz
     ClockDivider clock (
         .cin(CLOCK_50),
-        .cout(clk)
+        .tick(clockTick)
     );
 
     // Instantiate ShotClockCounter to manage the countdown logic
     ShotClockCounter counter (
-        .clk(clk),
+        .clk(CLOCK_50),
+        .tick(clockTick),
         .pause(pauseButton),
         .reset(resetButton),
         .mode(SW),

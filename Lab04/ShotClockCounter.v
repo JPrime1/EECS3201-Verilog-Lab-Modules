@@ -1,5 +1,6 @@
 module ShotClockCounter(
-    input clk,          // 1 Hz clock
+    input clk,          // 50 MHz clock input
+    input tick,         // 1 Hz clock tick
     input pause,        // pause toggle button
     input reset,        // reset button
     input mode,         // SW0 : 0=24 sec, 1=30 sec
@@ -33,12 +34,12 @@ module ShotClockCounter(
             pauseState <= ~pauseState;
         end
 
-        // Countdown logic - only count down if not paused and count is greater than 0
-        else if (!pauseState && count > 0) begin
+        // Countdown logic - only count down if not paused and count is greater than 0 AND we have a 1 second tick
+        else if (tick && !pauseState && count > 0) begin
             count <= count - 1;
         end
 
-        // Update the current stored mode
+        // Update previous mode state
         prevMode <= mode;
 
     end
