@@ -1,3 +1,21 @@
+//============================================================
+// EECS 3201 – Lab 4
+// Shot Clock Timer with 2 Seven-Segment Display and Pause/Reset Functionality
+//
+// Student Name: James Prime
+// Student Number: 215028657
+//
+// GitHub Repository:
+// https://github.com/JPrime1/EECS3201-Verilog-Lab-Modules.git
+//
+// Description:
+// This project implements a shot clock timer using a 50 MHz clock input. 
+// The timer counts down from either 24 or 30 seconds based on the input switch.
+// The timer can be paused and reset using two buttons, 
+// and the current time is displayed on two seven-segment displays.      
+//
+//============================================================
+
 module Lab04 (
     input  CLOCK_50,        // 50 MHz clock input
     input  [0:0] SW,        // SW0: Mode switch (0=24 sec, 1=30 sec)
