@@ -1,1 +1,5 @@
-*.qpf *.qsf db/ incremental_db/ /FinalProject/TestBenches/
+*.qpf 
+*.qsf 
+db/ 
+incremental_db/ 
+/FinalProject/TestBenches/
