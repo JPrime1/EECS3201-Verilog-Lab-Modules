@@ -2,7 +2,7 @@
 // Purpose: Connect 10 switches to HEX0 and HEX1
 // Remaining HEX displays are blank
 
-module display_driver(
+module DisplayDriver(
     input [9:0] sw,           // 10 switches input
     output [7:0] HEX0, HEX1, HEX2, HEX3, HEX4, HEX5  // 6 HEX displays
 );
