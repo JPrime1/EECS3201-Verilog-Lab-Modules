@@ -2,4 +2,6 @@
 *.qsf 
 db/ 
 incremental_db/ 
-/FinalProject/TestBenches/
+/FinalProject/_TestBenches/
+*.zip
+*.txt
