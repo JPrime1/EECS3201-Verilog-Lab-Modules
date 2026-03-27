@@ -10,8 +10,8 @@ module TickGenerator(
 );
 
     // us too quick, sec too slow, so we need to count to 50,000 for 1 ms
-    reg [15:0] count;                // 16-bit counter sufficient for 50,000 cycles
-    parameter val = 16'd50_000;      // Number of clock cycles for 1 ms tick
+    reg [15:0] count;                   // 16-bit counter sufficient for 50,000 cycles
+    parameter TICK_COUNT = 16'd50_000;  // Number of clock cycles for 1 ms tick
 
     // On every rising edge of the input clock
     always @(posedge cin) begin
@@ -23,7 +23,7 @@ module TickGenerator(
 
         // Count to 50,000 for 1 ms tick generation
         else begin
-            if (count >= val - 1) begin
+            if (count >= TICK_COUNT - 1) begin
                 count <= 0;  // Reset counter
                 tick <= 1;   // Output a single-cycle tick pulse
             end
