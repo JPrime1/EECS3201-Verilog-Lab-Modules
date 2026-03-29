@@ -1,0 +1,5 @@
+module FinalTop (
+    // Inputs
+);
+    
+endmodule
