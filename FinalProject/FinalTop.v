@@ -64,12 +64,32 @@ module TopLevel(
         .index(menuIndex)
     );
 
+    // FSM wires (ADDED)
+    wire [2:0] state;
+    wire depositEn;
+    wire withdrawEn;
+
+    // ATM FSM (ADDED)
+    ATMStateFSM fsm(
+        .clk(clk),
+        .rst(rst),
+        .enterPulse(enterPulse),
+        .nextPulse(nextPulse),
+        .pinValid(1'b0),
+        .pinFail(1'b0),
+        .timeout(1'b0),
+        .menuIndex(menuIndex),
+        .depositEn(depositEn),
+        .withdrawEn(withdrawEn),
+        .state(state)
+    );
+
     // Balance Register (core storage)
     wire [9:0] balance;
     BalanceRegister balanceReg(
         .clk(clk),
-        .depositEn(1'b0),      // Sprint 2 placeholder (FSM will drive later)
-        .withdrawEn(1'b0),     // Sprint 2 placeholder
+        .depositEn(depositEn),
+        .withdrawEn(withdrawEn),
         .amount(inputValue),
         .balance(balance)
     );
