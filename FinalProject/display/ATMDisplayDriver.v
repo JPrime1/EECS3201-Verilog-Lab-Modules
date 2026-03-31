@@ -20,9 +20,9 @@ module ATMDisplayDriver(
     // internal character codes (5-bit IDs)
     reg [4:0] d0, d1, d2, d3, d4, d5;
 
-    // digit extraction (0–99 safe display)
-    reg [3:0] bal_tens, bal_ones;
-    reg [3:0] amt_tens, amt_ones;
+    // digit extraction (0–999 safe display)
+    reg [3:0] bal_hund, bal_tens, bal_ones;
+    reg [3:0] amt_hund, amt_tens, amt_ones;
 
     always @(*) begin
 
@@ -34,10 +34,13 @@ module ATMDisplayDriver(
         d4 = 5'h1E;
         d5 = 5'h1E;
 
-        bal_tens = balance / 10;
+        // 3-digit split
+        bal_hund = balance / 100;
+        bal_tens = (balance / 10) % 10;
         bal_ones = balance % 10;
 
-        amt_tens = amount / 10;
+        amt_hund = amount / 100;
+        amt_tens = (amount / 10) % 10;
         amt_ones = amount % 10;
 
         case (state)
@@ -56,7 +59,7 @@ module ATMDisplayDriver(
                 d3 = 5'h13; // N
                 d2 = 5'h17; // U
 
-                d0 = {2'b00, menuIndex}; // menu number (0–7 fits 5-bit map)
+                d0 = {2'b00, menuIndex};
             end
 
             // BALANCE state
@@ -65,6 +68,7 @@ module ATMDisplayDriver(
                 d4 = 5'h0A; // A
                 d3 = 5'h11; // L
 
+                d2 = bal_hund;
                 d1 = bal_tens;
                 d0 = bal_ones;
             end
@@ -76,22 +80,24 @@ module ATMDisplayDriver(
                 d3 = 5'h0C; // C
             end
 
+            // DEPOSIT
             3'd3: begin
-                // DEPOSIT
                 d5 = 5'h0D; // D
                 d4 = 5'h0E; // E
                 d3 = 5'h15; // P
 
+                d2 = amt_hund;
                 d1 = amt_tens;
                 d0 = amt_ones;
             end
 
+            // WITHDRAW shown as "-DR"
             3'd4: begin
-                // WITHDRAW shown as "-DR"
-                d5 = 5'h18; // '-' (or blank if you don't have it)
+                d5 = 5'h18; // '-'
                 d4 = 5'h0D; // D
-                d3 = 5'h16; // R
+                d3 = 5'h17; // R  (FIXED)
 
+                d2 = amt_hund;
                 d1 = amt_tens;
                 d0 = amt_ones;
             end

@@ -7,15 +7,15 @@ module DisplayDriver(
     output [7:0] HEX0, HEX1, HEX2, HEX3, HEX4, HEX5  // 6 HEX displays
 );
 
-    // HEX0 shows lower 4 bits of switches (sw[3:0])
-    hex_display_decoder d0 (
-        .in(sw[3:0]),
+    // HEX0 shows lower 5 bits of switches (sw[4:0])
+    charEncoder d0 (
+        .in(sw[4:0]),
         .hex_out(HEX0)
     );
 
-    // HEX1 shows upper 4 bits of switches (sw[7:4])
-    hex_display_decoder d1 (
-        .in(sw[7:4]),
+    // HEX1 shows upper bits of switches (sw[9:5])
+    charEncoder d1 (
+        .in(sw[9:5]),
         .hex_out(HEX1)
     );
 
