@@ -76,20 +76,24 @@ module ATMDisplayDriver(
                 d3 = 5'h0C; // C
             end
 
-            // DEPOSIT / WITHDRAW states
-            3'd3, 3'd4: begin
-
-                d5 = 5'h0D; // D (or W depending on your encoding choice later)
-
-                if (txnError)
-                    d4 = 5'h0E; // E
-
-                if (txnSuccess)
-                    d4 = 5'h14; // O (OK style reuse)
+            3'd3: begin
+                // DEPOSIT
+                d5 = 5'h0D; // D
+                d4 = 5'h0E; // E
+                d3 = 5'h15; // P
 
                 d1 = amt_tens;
                 d0 = amt_ones;
+            end
 
+            3'd4: begin
+                // WITHDRAW shown as "-DR"
+                d5 = 5'h18; // '-' (or blank if you don't have it)
+                d4 = 5'h0D; // D
+                d3 = 5'h16; // R
+
+                d1 = amt_tens;
+                d0 = amt_ones;
             end
 
         endcase
