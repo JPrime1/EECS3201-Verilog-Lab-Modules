@@ -7,16 +7,13 @@ module PinComparator(
     input [9:0] enteredPin,   // PIN from InputRegister
     input [9:0] storedPin,    // PIN from PinRegister
     
-    output pinValidPulse,     // 1-cycle success pulse
-    output pinFailPulse       // 1-cycle fail pulse
+    output reg pinValidPulse,     // 1-cycle success pulse
+    output reg pinFailPulse       // 1-cycle fail pulse
 );
 
     // combinational comparison
+    wire match;
     assign match = (enteredPin == storedPin);
-
-    // registered pulse outputs
-    reg pinValidPulse;
-    reg pinFailPulse;
 
     always @(posedge clk) begin
 
