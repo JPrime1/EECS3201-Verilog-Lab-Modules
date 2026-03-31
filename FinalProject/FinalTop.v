@@ -2,15 +2,17 @@
 // connects all core modules together (no FSM logic in Sprint 2)
 
 module FinalTop(
-    input clk,              // 50 MHz system clock
+    input CLOCK_50,     // 50 MHz system clock
+    input [9:0] SW,     // 10 switches input
+    input [1:0] KEY,    // 2 buttons input (ENTER, NEXT)
 
-    input [9:0] sw,         // 10 switches input
-
-    input btnEnter,         // ENTER button input
-    input btnNext,          // NEXT button input
-
-    output [7:0] HEX0, HEX1, HEX2, HEX3, HEX4, HEX5  // 6 seven segment displays
+    output [7:0] HEX0, HEX1, HEX2, HEX3, HEX4, HEX5
 );
+    // rename inputs for clarity
+    wire clk = CLOCK_50;    // 50 MHz clock
+    wire [9:0] sw = SW;     // 10 switches
+    wire btnEnter = KEY[0]; // ENTER button
+    wire btnNext = KEY[1];  // NEXT button
 
     // Reset logic: hidden reset when all switches are on and NEXT is pressed
     wire allSwOn = &sw;                 // true when all switches are 1
@@ -42,7 +44,7 @@ module FinalTop(
         .pulse(nextPulse)
     );
 
-    // Input Register (captures switch value)
+    // Input Register
     wire [9:0] inputValue;
 
     InputRegister inputReg(
@@ -55,6 +57,7 @@ module FinalTop(
 
     // Menu Index Register
     wire [2:0] menuIndex;
+
     MenuIndexRegister menuReg(
         .clk(clk),
         .rst(rst),
@@ -62,7 +65,7 @@ module FinalTop(
         .index(menuIndex)
     );
 
-    // PIN SYSTEM 
+    // PIN SYSTEM
     wire [9:0] storedPin;
     wire pinValid;
     wire pinFail;
@@ -71,18 +74,15 @@ module FinalTop(
     PinRegister pinReg(
         .clk(clk),
         .rst(rst),
-        .load(1'b0),          // Sprint 3 placeholder (PIN change later)
+        .load(1'b0),
         .newPin(inputValue),
         .pin(storedPin)
     );
 
     PinComparator pinComp(
-        .clk(clk),
-        .enterPulse(enterPulse),
         .enteredPin(inputValue),
         .storedPin(storedPin),
-        .pinValidPulse(pinValid),
-        .pinFailPulse(pinFail)
+        .match(pinValid)
     );
 
     AttemptCounter attemptCounter(
@@ -98,9 +98,8 @@ module FinalTop(
     wire depositEn;
     wire withdrawEn;
 
-    wire timeout = 1'b0;   // Sprint 3 placeholder
+    wire timeout = 1'b0;
 
-    // ATM FSM
     ATMStateFSM fsm(
         .clk(clk),
         .rst(rst),
@@ -113,7 +112,7 @@ module FinalTop(
         .state(state)
     );
 
-    // Balance Register (core storage)
+    // Balance Register
     wire [9:0] balance;
 
     BalanceRegister balanceReg(
@@ -125,8 +124,8 @@ module FinalTop(
     );
 
     // Display Driver
-    wire txnSuccess = pinValid;
-    wire txnError = pinFail;
+    wire txnSuccess = depositEn | withdrawEn;
+    wire txnError = pinFail | locked;
 
     ATMDisplayDriver display(
         .state(state),
@@ -135,6 +134,7 @@ module FinalTop(
         .amount(inputValue),
         .txnSuccess(txnSuccess),
         .txnError(txnError),
+
         .HEX0(HEX0),
         .HEX1(HEX1),
         .HEX2(HEX2),

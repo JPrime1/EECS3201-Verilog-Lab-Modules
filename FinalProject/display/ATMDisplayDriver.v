@@ -1,86 +1,106 @@
-// Based off lab03 display driver, but significantly expanded for final project
-// purpose: display system state, balance, and transaction information on 7-seg displays
-// replaces simple switch display with FSM-driven output
+// purpose: ATM display driver
+// converts FSM state and system values into 7-segment output using charEncoder
 
 module ATMDisplayDriver(
-    input [2:0] state,      // current FSM state
-    input [2:0] menuIndex,  // current menu selection
-    input [9:0] balance,    // current account balance
-    input [9:0] amount,     // current input amount
-    input txnSuccess,       // transaction success pulse
-    input txnError,         // transaction error pulse
+    input [2:0] state,        // FSM state
+    input [2:0] menuIndex,    // menu selection index
+    input [9:0] balance,      // account balance
+    input [9:0] amount,       // transaction amount
+    input txnSuccess,         // transaction success flag
+    input txnError,           // transaction error flag
 
-    output [7:0] HEX0, HEX1, HEX2, HEX3, HEX4, HEX5 // 6 displays
+    output [7:0] HEX0,
+    output [7:0] HEX1,
+    output [7:0] HEX2,
+    output [7:0] HEX3,
+    output [7:0] HEX4,
+    output [7:0] HEX5
 );
 
-    // state encoding (must match FSM)
-    localparam IDLE      = 3'd0;
-    localparam PIN_ENTRY = 3'd1;
-    localparam MENU      = 3'd2;
-    localparam DEPOSIT   = 3'd3;
-    localparam WITHDRAW  = 3'd4;
-    localparam BALANCE   = 3'd5;
-    localparam LOCKED    = 3'd6;
+    // internal character codes (5-bit IDs)
+    reg [4:0] d0, d1, d2, d3, d4, d5;
 
-    reg [23:0] displayValue; // 6 hex digits (4 bits each)
+    // digit extraction (0–99 safe display)
+    reg [3:0] bal_tens, bal_ones;
+    reg [3:0] amt_tens, amt_ones;
 
     always @(*) begin
 
-        // default blank display
-        displayValue = 24'hFFFFFF;
+        // default blank
+        d0 = 5'h1E;
+        d1 = 5'h1E;
+        d2 = 5'h1E;
+        d3 = 5'h1E;
+        d4 = 5'h1E;
+        d5 = 5'h1E;
 
-        // show success message (highest priority)
-        if (txnSuccess) begin
-            displayValue = 24'h0D0E0E; // crude "donE"
-        end
+        bal_tens = balance / 10;
+        bal_ones = balance % 10;
 
-        // show error message
-        else if (txnError) begin
-            displayValue = 24'h0E0A0A; // crude "Err"
-        end
+        amt_tens = amount / 10;
+        amt_ones = amount % 10;
 
-        else begin
-            case (state)
+        case (state)
 
-                MENU: begin
-                    // show menu index
-                    displayValue[3:0] = menuIndex;
-                end
+            // PIN state
+            3'd1: begin
+                d5 = 5'h15; // P
+                d4 = 5'h10; // I
+                d3 = 5'h13; // N
+            end
 
-                BALANCE: begin
-                    // show balance (lower digits only for now)
-                    displayValue[9:0] = balance;
-                end
+            // MENU state
+            3'd2: begin
+                d5 = 5'h12; // M
+                d4 = 5'h0E; // E
+                d3 = 5'h13; // N
+                d2 = 5'h17; // U
 
-                DEPOSIT: begin
-                    // show input amount
-                    displayValue[9:0] = amount;
-                end
+                d0 = {2'b00, menuIndex}; // menu number (0–7 fits 5-bit map)
+            end
 
-                WITHDRAW: begin
-                    // show input amount
-                    displayValue[9:0] = amount;
-                end
+            // BALANCE state
+            3'd5: begin
+                d5 = 5'h0B; // B
+                d4 = 5'h0A; // A
+                d3 = 5'h11; // L
 
-                LOCKED: begin
-                    displayValue = 24'h0A0C0C; // crude "LOC"
-                end
+                d1 = bal_tens;
+                d0 = bal_ones;
+            end
 
-                default: begin
-                    displayValue = 24'hFFFFFF;
-                end
+            // LOCK state
+            3'd6: begin
+                d5 = 5'h11; // L
+                d4 = 5'h14; // O
+                d3 = 5'h0C; // C
+            end
 
-            endcase
-        end
+            // DEPOSIT / WITHDRAW states
+            3'd3, 3'd4: begin
 
+                d5 = 5'h0D; // D (or W depending on your encoding choice later)
+
+                if (txnError)
+                    d4 = 5'h0E; // E
+
+                if (txnSuccess)
+                    d4 = 5'h14; // O (OK style reuse)
+
+                d1 = amt_tens;
+                d0 = amt_ones;
+
+            end
+
+        endcase
     end
 
-    // map 6 hex digits to displays
-    hex_display_decoder d0(.in(displayValue[3:0]),   .hex_out(HEX0));
-    hex_display_decoder d1(.in(displayValue[7:4]),   .hex_out(HEX1));
-    hex_display_decoder d2(.in(displayValue[11:8]),  .hex_out(HEX2));
-    hex_display_decoder d3(.in(displayValue[15:12]), .hex_out(HEX3));
-    hex_display_decoder d4(.in(displayValue[19:16]), .hex_out(HEX4));
-    hex_display_decoder d5(.in(displayValue[23:20]), .hex_out(HEX5));
+    // char encoding stage
+    charEncoder e0(.in(d0), .hex_out(HEX0));
+    charEncoder e1(.in(d1), .hex_out(HEX1));
+    charEncoder e2(.in(d2), .hex_out(HEX2));
+    charEncoder e3(.in(d3), .hex_out(HEX3));
+    charEncoder e4(.in(d4), .hex_out(HEX4));
+    charEncoder e5(.in(d5), .hex_out(HEX5));
 
 endmodule
