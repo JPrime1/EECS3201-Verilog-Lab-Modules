@@ -17,7 +17,7 @@ module ATMStateFSM(
     output reg withdrawEn,  // enables withdraw operation in BalanceRegister
     output reg txnSuccess,  // high when transaction succeeds
     output reg txnError,    // high when transaction fails
-    output reg [2:0] state  // current system state for display/control
+    output reg [3:0] state  // current system state for display/control
 );
 
     // state encoding (3-bit FSM states)
@@ -28,9 +28,10 @@ module ATMStateFSM(
     localparam WITHDRAW  = 3'd4;    // withdraw transaction state
     localparam BALANCE   = 3'd5;    // balance display state
     localparam LOCKED    = 3'd6;    // locked state after failed PIN attempts
+    localparam PIN_SET   = 3'd7;    // PIN set state
 
-    reg [2:0] currentState;         // holds current FSM state
-    reg [2:0] nextState;            // holds next FSM state logic result
+    reg [3:0] currentState;         // holds current FSM state
+    reg [3:0] nextState;            // holds next FSM state logic result
 
     // sequential state update block
     always @(posedge clk) begin
@@ -70,6 +71,12 @@ module ATMStateFSM(
                 end
                 else if (timeout) begin
                     nextState = IDLE;
+                end
+            end
+
+            PIN_SET: begin
+                if (enterPulse) begin
+                    nextState = MENU;
                 end
             end
 

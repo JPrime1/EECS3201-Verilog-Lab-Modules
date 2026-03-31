@@ -72,7 +72,7 @@ module FinalTop(
     wire locked;
 
     wire loadPin;
-    assign loadPin = enterPulse & (state === 3'd1);
+    assign loadPin = enterPulse & (state === 3'd7); // load new PIN when in PIN_SET state
     PinRegister pinReg(
         .clk(clk),
         .rst(rst),
@@ -99,7 +99,7 @@ module FinalTop(
     );
 
     // FSM wires
-    wire [2:0] state;
+    wire [3:0] state;
     wire depositEn;
     wire withdrawEn;
     wire txnSuccess;

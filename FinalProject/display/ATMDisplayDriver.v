@@ -2,7 +2,7 @@
 // converts FSM state and system values into 7-segment output using charEncoder
 
 module ATMDisplayDriver(
-    input [2:0] state,        // FSM state
+    input [3:0] state,        // FSM state
     input [2:0] menuIndex,    // menu selection index
     input [9:0] balance,      // account balance
     input [9:0] amount,       // transaction amount
@@ -50,6 +50,14 @@ module ATMDisplayDriver(
                 d5 = 5'h15; // P
                 d4 = 5'h10; // I
                 d3 = 5'h13; // N
+            end
+
+            // PIN Set state
+            3'd7: begin
+                d5 = 5'h15; // P
+                d4 = 5'h10; // I
+                d3 = 5'h13; // N
+                d2 = 5'h05; // S
             end
 
             // MENU state
