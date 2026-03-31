@@ -37,7 +37,7 @@ module charEncoder(
             5'h14: hex_out = 8'hC0; // O
             5'h15: hex_out = 8'h8C; // P (approx)
             5'h16: hex_out = 8'hAF; // R
-            5'h17: hex_out = 8'h83; // U
+            5'h17: hex_out = 8'hE3; // U
             5'h18: hex_out = 8'h91; // W (approx)
 
             // UI controls

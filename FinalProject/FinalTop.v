@@ -86,7 +86,7 @@ module FinalTop(
         .storedPin(storedPin),
         .pinValidPulse(pinValid),
         .pinFailPulse(pinFail)
-);
+    );
 
     AttemptCounter attemptCounter(
         .clk(clk),
@@ -100,18 +100,27 @@ module FinalTop(
     wire [2:0] state;
     wire depositEn;
     wire withdrawEn;
+    wire txnSuccess;
+    wire txnError;
 
     wire timeout = 1'b0;
 
     ATMStateFSM fsm(
         .clk(clk),
         .rst(rst),
+        .enterPulse(enterPulse),
+        .nextPulse(nextPulse), 
         .pinValid(pinValid),
         .pinFail(pinFail),
         .timeout(timeout),
         .menuIndex(menuIndex),
+        .amount(inputValue),
+        .balance(balance),
+
         .depositEn(depositEn),
         .withdrawEn(withdrawEn),
+        .txnSuccess(txnSuccess),
+        .txnError(txnError),
         .state(state)
     );
 
@@ -127,16 +136,16 @@ module FinalTop(
     );
 
     // Display Driver
-    wire txnSuccess = depositEn | withdrawEn;
-    wire txnError = pinFail | locked;
+    wire finalSuccess = txnSuccess | depositEn | withdrawEn;
+    wire finalError = txnError | pinFail | locked;
 
     ATMDisplayDriver display(
         .state(state),
         .menuIndex(menuIndex),
         .balance(balance),
         .amount(inputValue),
-        .txnSuccess(txnSuccess),
-        .txnError(txnError),
+        .txnSuccess(finalSuccess),
+        .txnError(finalError),
 
         .HEX0(HEX0),
         .HEX1(HEX1),
