@@ -94,9 +94,14 @@ module TopLevel(
         .balance(balance)
     );
 
-    // Display Driver (temporary debug view)
-    DisplayDriver display(
-        .sw(sw),
+    // Display Driver
+    ATMDisplayDriver display(
+        .state(state),
+        .menuIndex(menuIndex),
+        .balance(balance),
+        .amount(inputValue),
+        .txnSuccess(txnSuccess),
+        .txnError(txnError),
         .HEX0(HEX0),
         .HEX1(HEX1),
         .HEX2(HEX2),
