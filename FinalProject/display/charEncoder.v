@@ -30,7 +30,7 @@ module charEncoder(
             5'h0E: hex_out = 8'h86; // E
             5'h0F: hex_out = 8'h8E; // F
 
-            5'h10: hex_out = 8'h89; // I
+            5'h10: hex_out = 8'hF9; // I
             5'h11: hex_out = 8'hC7; // L
             5'h12: hex_out = 8'hAB; // M (approx)
             5'h13: hex_out = 8'hC8; // N (approx)
