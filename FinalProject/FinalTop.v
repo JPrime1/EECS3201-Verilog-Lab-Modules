@@ -1,7 +1,7 @@
 // purpose: top level module for ATM system
 // connects all core modules together (no FSM logic in Sprint 2)
 
-module TopLevel(
+module FinalTop(
     input clk,              // 50 MHz system clock
 
     input [9:0] sw,         // 10 switches input
@@ -24,7 +24,6 @@ module TopLevel(
         .tick(tick)
     );
 
-
     // Button Modules
     wire enterPulse;
     wire nextPulse;
@@ -42,7 +41,6 @@ module TopLevel(
         .btn(btnNext),
         .pulse(nextPulse)
     );
-
 
     // Input Register (captures switch value)
     wire [9:0] inputValue;
@@ -64,20 +62,51 @@ module TopLevel(
         .index(menuIndex)
     );
 
-    // FSM wires (ADDED)
+    // PIN SYSTEM 
+    wire [9:0] storedPin;
+    wire pinValid;
+    wire pinFail;
+    wire locked;
+
+    PinRegister pinReg(
+        .clk(clk),
+        .rst(rst),
+        .load(1'b0),          // Sprint 3 placeholder (PIN change later)
+        .newPin(inputValue),
+        .pin(storedPin)
+    );
+
+    PinComparator pinComp(
+        .clk(clk),
+        .enterPulse(enterPulse),
+        .enteredPin(inputValue),
+        .storedPin(storedPin),
+        .pinValidPulse(pinValid),
+        .pinFailPulse(pinFail)
+    );
+
+    AttemptCounter attemptCounter(
+        .clk(clk),
+        .rst(rst),
+        .fail(pinFail),
+        .success(pinValid),
+        .locked(locked)
+    );
+
+    // FSM wires
     wire [2:0] state;
     wire depositEn;
     wire withdrawEn;
 
-    // ATM FSM (ADDED)
+    wire timeout = 1'b0;   // Sprint 3 placeholder
+
+    // ATM FSM
     ATMStateFSM fsm(
         .clk(clk),
         .rst(rst),
-        .enterPulse(enterPulse),
-        .nextPulse(nextPulse),
-        .pinValid(1'b0),
-        .pinFail(1'b0),
-        .timeout(1'b0),
+        .pinValid(pinValid),
+        .pinFail(pinFail),
+        .timeout(timeout),
         .menuIndex(menuIndex),
         .depositEn(depositEn),
         .withdrawEn(withdrawEn),
@@ -86,6 +115,7 @@ module TopLevel(
 
     // Balance Register (core storage)
     wire [9:0] balance;
+
     BalanceRegister balanceReg(
         .clk(clk),
         .depositEn(depositEn),
@@ -95,6 +125,9 @@ module TopLevel(
     );
 
     // Display Driver
+    wire txnSuccess = pinValid;
+    wire txnError = pinFail;
+
     ATMDisplayDriver display(
         .state(state),
         .menuIndex(menuIndex),
