@@ -2,31 +2,39 @@
 // outputs high when both values match exactly
 
 module PinComparator(
+    input clk,                // system clock
+    input enterPulse,         // ENTER button pulse
     input [9:0] enteredPin,   // PIN from InputRegister
     input [9:0] storedPin,    // PIN from PinRegister
-    output match              // high if PINs are equal
+    
+    output pinValidPulse,     // 1-cycle success pulse
+    output pinFailPulse       // 1-cycle fail pulse
 );
 
     // combinational comparison
     assign match = (enteredPin == storedPin);
 
+    // registered pulse outputs
+    reg pinValidPulse;
+    reg pinFailPulse;
+
     always @(posedge clk) begin
 
         // default outputs low (1-cycle pulse behavior)
-        pinValidPulse <= 0;
-        pinFailPulse <= 0;
+        pinValidPulse <= 1'b0;
+        pinFailPulse <= 1'b0;
 
         // perform comparison only on ENTER press
         if (enterPulse) begin
 
             // correct PIN
             if (match) begin
-                pinValidPulse <= 1;
+                pinValidPulse <= 1'b1;
             end
 
             // incorrect PIN
             else begin
-                pinFailPulse <= 1;
+                pinFailPulse <= 1'b1;
             end
 
         end

@@ -80,10 +80,13 @@ module FinalTop(
     );
 
     PinComparator pinComp(
+        .clk(clk),
+        .enterPulse(enterPulse),
         .enteredPin(inputValue),
         .storedPin(storedPin),
-        .match(pinValid)
-    );
+        .pinValidPulse(pinValid),
+        .pinFailPulse(pinFail)
+);
 
     AttemptCounter attemptCounter(
         .clk(clk),
