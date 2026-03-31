@@ -15,6 +15,8 @@ module ATMStateFSM(
 
     output reg depositEn,   // enables deposit operation in BalanceRegister
     output reg withdrawEn,  // enables withdraw operation in BalanceRegister
+    output reg txnSuccess,  // high when transaction succeeds
+    output reg txnError,    // high when transaction fails
     output reg [2:0] state  // current system state for display/control
 );
 
@@ -50,39 +52,31 @@ module ATMStateFSM(
 
         depositEn = 1'b0;           // default: no deposit
         withdrawEn = 1'b0;          // default: no withdraw
+        txnSuccess = 1'b0;          // default: no success signal
+        txnError = 1'b0;            // default: no error signal
 
         case (currentState)
 
             IDLE: begin
-                // system boots directly into PIN entry
                 nextState = PIN_ENTRY;
             end
 
             PIN_ENTRY: begin
-
-                // correct PIN → go to menu
                 if (pinValid) begin
                     nextState = MENU;
                 end
-
-                // incorrect PIN → lock system
                 else if (pinFail) begin
                     nextState = LOCKED;
                 end
-
-                // timeout → restart system
                 else if (timeout) begin
                     nextState = IDLE;
                 end
-
             end
 
             MENU: begin
-
-                // only act when user confirms selection
                 if (enterPulse) begin
                     case (menuIndex)
-
+                    
                         3'd0: nextState = BALANCE;  // view balance
                         3'd1: nextState = DEPOSIT;  // deposit money
                         3'd2: nextState = WITHDRAW; // withdraw money
@@ -93,24 +87,22 @@ module ATMStateFSM(
 
                     endcase
                 end
-
             end
 
             BALANCE: begin
-
-                // return to menu on NEXT
                 if (nextPulse) begin
                     nextState = MENU;
                 end
-
             end
 
             DEPOSIT: begin
 
-                // enable deposit only on ENTER press
-                depositEn = enterPulse;
+                // deposit always succeeds on ENTER
+                if (enterPulse) begin
+                    depositEn = 1'b1;
+                    txnSuccess = 1'b1;
+                end
 
-                // return to menu on NEXT
                 if (nextPulse) begin
                     nextState = MENU;
                 end
@@ -119,15 +111,17 @@ module ATMStateFSM(
 
             WITHDRAW: begin
 
-                // allow withdraw only if enough balance exists
+                // successful withdraw
                 if (enterPulse && (balance >= amount)) begin
                     withdrawEn = 1'b1;
-                end
-                else begin
-                    withdrawEn = 1'b0;
+                    txnSuccess = 1'b1;
                 end
 
-                // return to menu on NEXT
+                // failed withdraw (insufficient funds)
+                else if (enterPulse && (balance < amount)) begin
+                    txnError = 1'b1;
+                end
+
                 if (nextPulse) begin
                     nextState = MENU;
                 end
@@ -135,12 +129,10 @@ module ATMStateFSM(
             end
 
             LOCKED: begin
-                // system remains locked until external reset
                 nextState = LOCKED;
             end
 
             default: begin
-                // safety fallback state
                 nextState = IDLE;
             end
 
