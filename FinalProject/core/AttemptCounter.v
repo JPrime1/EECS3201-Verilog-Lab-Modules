@@ -29,15 +29,16 @@ module AttemptCounter(
             // increment on failed attempt
             else if (fail) begin
 
+                // only increment if below max attempts
                 if (count < 3'd5) begin
                     count <= count + 1;
                 end
 
-                // lock when reaching 5 attempts
-                if (count == 3'd4) begin
-                    locked <= 1;
-                end
+            end
 
+            // lock when reaching 5 failed attempts
+            if (count >= 3'd5) begin
+                locked <= 1;
             end
 
         end

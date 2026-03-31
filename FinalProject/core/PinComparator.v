@@ -10,4 +10,27 @@ module PinComparator(
     // combinational comparison
     assign match = (enteredPin == storedPin);
 
+    always @(posedge clk) begin
+
+        // default outputs low (1-cycle pulse behavior)
+        pinValidPulse <= 0;
+        pinFailPulse <= 0;
+
+        // perform comparison only on ENTER press
+        if (enterPulse) begin
+
+            // correct PIN
+            if (match) begin
+                pinValidPulse <= 1;
+            end
+
+            // incorrect PIN
+            else begin
+                pinFailPulse <= 1;
+            end
+
+        end
+
+    end
+
 endmodule
