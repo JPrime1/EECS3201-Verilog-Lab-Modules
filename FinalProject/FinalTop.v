@@ -15,8 +15,8 @@ module FinalTop(
     wire btnNext = KEY[1];  // NEXT button
 
     // Reset logic: hidden reset when all switches are on and NEXT is pressed
-    wire allSwOn = &sw;                 // true when all switches are 1
-    wire rst = allSwOn & btnNext;       // hidden reset condition
+    // wire allSwOn = &sw;                 // true when all switches are 1
+    wire rst = sw[9] & btnNext;       // hidden reset condition
 
     // Tick Generator
     wire tick;
@@ -71,10 +71,12 @@ module FinalTop(
     wire pinFail;
     wire locked;
 
+    wire loadPin;
+    assign loadPin = enterPulse & (state === 3'd1);
     PinRegister pinReg(
         .clk(clk),
         .rst(rst),
-        .load(1'b0),
+        .load(loadPin),
         .newPin(inputValue),
         .pin(storedPin)
     );

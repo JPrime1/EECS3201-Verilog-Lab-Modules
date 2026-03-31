@@ -18,7 +18,7 @@ module MenuIndexRegister(
         // cycle menu on next button press
         else if (nextPulse) begin
 
-            if (index == 3'd4) begin
+            if (index === 3'd4) begin
                 index <= 3'd0;   // wrap back to first option
             end
 

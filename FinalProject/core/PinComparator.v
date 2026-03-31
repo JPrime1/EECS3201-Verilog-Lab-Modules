@@ -13,7 +13,7 @@ module PinComparator(
 
     // combinational comparison
     wire match;
-    assign match = (enteredPin == storedPin);
+    assign match = (enteredPin === storedPin);
 
     always @(posedge clk) begin
 
