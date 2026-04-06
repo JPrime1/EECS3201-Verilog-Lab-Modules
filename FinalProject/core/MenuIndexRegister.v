@@ -5,7 +5,8 @@ module MenuIndexRegister(
     input clk,              // clock input (50 MHz)
     input rst,              // synchronous reset
     input nextPulse,        // 1-cycle pulse from NEXT button
-    output reg [2:0] index  // need 3 bits to represent up to 8 options
+    input inMenuState,      // signal from FSM indicating we're in the menu state (fixes indexing issues)
+    output reg [2:0] index  // menu selection index
 );
 
     always @(posedge clk) begin
@@ -16,10 +17,11 @@ module MenuIndexRegister(
         end
 
         // cycle menu on next button press
-        else if (nextPulse) begin
+        else if (nextPulse && inMenuState) begin
 
-            if (index === 3'd4) begin
-                index <= 3'd0;   // wrap back to first option
+            // FIX: use standard equality (not ===)
+            if (index == 3'd4) begin
+                index <= 3'd0;
             end
 
             else begin

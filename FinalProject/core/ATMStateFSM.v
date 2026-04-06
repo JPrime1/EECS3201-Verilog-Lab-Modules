@@ -17,11 +17,12 @@ module ATMStateFSM(
     output reg withdrawEn,  // enables withdraw operation in BalanceRegister
     output reg txnSuccess,  // high when transaction succeeds
     output reg txnError,    // high when transaction fails
-    output reg [3:0] state  // current system state for display/control
+    output reg [3:0] state,  // current system state for display/control
+    output reg inMenuState   // indicates when system is in MENU - fix indexing
 );
 
     // state encoding (3-bit FSM states)
-    localparam IDLE      = 3'd0;    // system idle / startup
+    localparam IDLE      = 3'd0;    // system idle / startup (acts as locked entry point)
     localparam PIN_ENTRY = 3'd1;    // PIN input state
     localparam MENU      = 3'd2;    // main menu selection state
     localparam DEPOSIT   = 3'd3;    // deposit transaction state
@@ -30,8 +31,8 @@ module ATMStateFSM(
     localparam LOCKED    = 3'd6;    // locked state after failed PIN attempts
     localparam PIN_SET   = 3'd7;    // PIN set state
 
-    reg [3:0] currentState;         // holds current FSM state
-    reg [3:0] nextState;            // holds next FSM state logic result
+    reg [3:0] currentState;
+    reg [3:0] nextState;
 
     // sequential state update block
     always @(posedge clk) begin
@@ -59,6 +60,7 @@ module ATMStateFSM(
         case (currentState)
 
             IDLE: begin
+                // system starts here (acts as locked default state)
                 nextState = PIN_ENTRY;
             end
 
@@ -74,23 +76,31 @@ module ATMStateFSM(
                 end
             end
 
+            LOCKED: begin
+                // locked state holds until reset (or future extension)
+                nextState = LOCKED;
+            end
+
             PIN_SET: begin
                 if (enterPulse) begin
-                    nextState = MENU;
+                    nextState = MENU; // fixed: safe return after PIN update
+                end
+                else begin
+                    nextState = PIN_SET;
                 end
             end
 
             MENU: begin
                 if (enterPulse) begin
                     case (menuIndex)
-                    
-                        3'd0: nextState = BALANCE;  // view balance
-                        3'd1: nextState = DEPOSIT;  // deposit money
-                        3'd2: nextState = WITHDRAW; // withdraw money
-                        3'd3: nextState = PIN_ENTRY;// re-enter PIN
-                        3'd4: nextState = IDLE;     // exit system
 
-                        default: nextState = MENU;  // invalid index safe fallback
+                        3'd0: nextState = BALANCE;
+                        3'd1: nextState = DEPOSIT;
+                        3'd2: nextState = WITHDRAW;
+                        3'd3: nextState = PIN_SET;
+                        3'd4: nextState = LOCKED;
+
+                        default: nextState = MENU;
 
                     endcase
                 end
@@ -100,43 +110,45 @@ module ATMStateFSM(
                 if (nextPulse) begin
                     nextState = MENU;
                 end
+                else begin
+                    nextState = BALANCE;
+                end
             end
 
             DEPOSIT: begin
 
-                // deposit always succeeds on ENTER
                 if (enterPulse) begin
                     depositEn = 1'b1;
                     txnSuccess = 1'b1;
-                end
-
-                if (nextPulse) begin
                     nextState = MENU;
+                end
+                else if (nextPulse) begin
+                    nextState = MENU;
+                end
+                else begin
+                    nextState = DEPOSIT;
                 end
 
             end
 
             WITHDRAW: begin
 
-                // successful withdraw
                 if (enterPulse && (balance >= amount)) begin
                     withdrawEn = 1'b1;
                     txnSuccess = 1'b1;
-                end
-
-                // failed withdraw (insufficient funds)
-                else if (enterPulse && (balance < amount)) begin
-                    txnError = 1'b1;
-                end
-
-                if (nextPulse) begin
                     nextState = MENU;
                 end
+                else if (enterPulse && (balance < amount)) begin
+                    txnError = 1'b1;
+                    nextState = WITHDRAW;
+                end
+                else if (nextPulse) begin
+                    nextState = MENU;
+                end
+                else begin
+                    nextState = WITHDRAW;
+                end
 
-            end
-
-            LOCKED: begin
-                nextState = LOCKED;
             end
 
             default: begin
@@ -149,6 +161,7 @@ module ATMStateFSM(
     // output current state to system/display
     always @(*) begin
         state = currentState;
+        inMenuState = (currentState == MENU);  // menu gate signal
     end
 
 endmodule

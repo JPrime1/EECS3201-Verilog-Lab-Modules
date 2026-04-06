@@ -8,15 +8,15 @@ module FinalTop(
 
     output [7:0] HEX0, HEX1, HEX2, HEX3, HEX4, HEX5
 );
+
     // rename inputs for clarity
     wire clk = CLOCK_50;    // 50 MHz clock
     wire [9:0] sw = SW;     // 10 switches
     wire btnEnter = KEY[0]; // ENTER button
     wire btnNext = KEY[1];  // NEXT button
 
-    // Reset logic: hidden reset when all switches are on and NEXT is pressed
-    // wire allSwOn = &sw;                 // true when all switches are 1
-    wire rst = sw[9] & btnNext;       // hidden reset condition
+    // Reset logic: hidden reset when switch[9] and NEXT pressed
+    wire rst = sw[9] & btnNext;
 
     // Tick Generator
     wire tick;
@@ -62,7 +62,19 @@ module FinalTop(
         .clk(clk),
         .rst(rst),
         .nextPulse(nextPulse),
-        .index(menuIndex)
+        .index(menuIndex),
+        .inMenuState(inMenuState)
+    );
+
+    // Balance Register (moved before FSM usage safety)
+    wire [9:0] balance;
+
+    BalanceRegister balanceReg(
+        .clk(clk),
+        .depositEn(depositEn),
+        .withdrawEn(withdrawEn),
+        .amount(inputValue),
+        .balance(balance)
     );
 
     // PIN SYSTEM
@@ -71,8 +83,12 @@ module FinalTop(
     wire pinFail;
     wire locked;
 
+    // FIX: removed unsafe state comparison in top module
     wire loadPin;
-    assign loadPin = enterPulse & (state === 3'd7); // load new PIN when in PIN_SET state
+
+    // FIX: PIN load should depend on FSM state (safe method via state == PIN_SET)
+    assign loadPin = enterPulse & (state == 3'd7);
+
     PinRegister pinReg(
         .clk(clk),
         .rst(rst),
@@ -104,14 +120,14 @@ module FinalTop(
     wire withdrawEn;
     wire txnSuccess;
     wire txnError;
-
+    wire inMenuState;   // FSM: to indicate when in menu state
     wire timeout = 1'b0;
 
     ATMStateFSM fsm(
         .clk(clk),
         .rst(rst),
         .enterPulse(enterPulse),
-        .nextPulse(nextPulse), 
+        .nextPulse(nextPulse),
         .pinValid(pinValid),
         .pinFail(pinFail),
         .timeout(timeout),
@@ -123,18 +139,8 @@ module FinalTop(
         .withdrawEn(withdrawEn),
         .txnSuccess(txnSuccess),
         .txnError(txnError),
-        .state(state)
-    );
-
-    // Balance Register
-    wire [9:0] balance;
-
-    BalanceRegister balanceReg(
-        .clk(clk),
-        .depositEn(depositEn),
-        .withdrawEn(withdrawEn),
-        .amount(inputValue),
-        .balance(balance)
+        .state(state),
+        .inMenuState(inMenuState)
     );
 
     // Display Driver
