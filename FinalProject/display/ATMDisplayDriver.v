@@ -43,74 +43,150 @@ module ATMDisplayDriver(
         amt_tens = (amount / 10) % 10;
         amt_ones = amount % 10;
 
-        case (state)
+        // PRIORITY OVERRIDE: TRANSACTION FEEDBACK
+        if (txnError) begin
+            d5 = 5'h0E; // E
+            d4 = 5'h17; // R
+            d3 = 5'h17; // R
+            d2 = 5'h1E;
+            d1 = 5'h1E;
+            d0 = 5'h1E;
+        end
+        else if (txnSuccess) begin
+            d5 = 5'h14; // O
+            d4 = 5'h0B; // K=B
+            d3 = 5'h1E;
+            d2 = 5'h1E;
+            d1 = 5'h1E;
+            d0 = 5'h1E;
+        end
+        else begin            
+            case (state)
 
-            // PIN state
-            3'd1: begin
-                d5 = 5'h15; // P
-                d4 = 5'h10; // I
-                d3 = 5'h13; // N
-            end
+                // PIN state
+                3'd1: begin
+                    d5 = 5'h15; // P
+                    d4 = 5'h10; // I
+                    d3 = 5'h13; // N
+                end
 
-            // PIN Set state
-            3'd7: begin
-                d5 = 5'h15; // P
-                d4 = 5'h10; // I
-                d3 = 5'h13; // N
-                d2 = 5'h05; // S
-            end
+                // PIN Set state
+                3'd7: begin
+                    d5 = 5'h15; // P
+                    d4 = 5'h10; // I
+                    d3 = 5'h13; // N
+                    d2 = 5'h05; // S
+                end
 
-            // MENU state
-            3'd2: begin
-                d5 = 5'h12; // M
-                d4 = 5'h0E; // E
-                d3 = 5'h13; // N
-                d2 = 5'h17; // U
+                // MENU state
+                3'd2: begin
+                    case(menuIndex)
 
-                d0 = {2'b00, menuIndex};
-            end
+                        // BALANCE
+                        3'd0: begin
+                            d5 = 5'h0B; // B
+                            d4 = 5'h0A; // A
+                            d3 = 5'h11; // L
+                            d2 = 5'h1E;
+                            d1 = 5'h1E;
+                            d0 = 5'h1E;
+                        end
 
-            // BALANCE state
-            3'd5: begin
-                d5 = 5'h0B; // B
-                d4 = 5'h0A; // A
-                d3 = 5'h11; // L
+                        // DEPOSIT
+                        3'd1: begin
+                            d5 = 5'h0D; // D
+                            d4 = 5'h0E; // E
+                            d3 = 5'h15; // P
+                            d2 = 5'h1E;
+                            d1 = 5'h1E;
+                            d0 = 5'h1E;
+                        end
 
-                d2 = bal_hund;
-                d1 = bal_tens;
-                d0 = bal_ones;
-            end
+                        // WITHDRAW
+                        3'd2: begin
+                            d5 = 5'h18; // -
+                            d4 = 5'h0D; // D
+                            d3 = 5'h17; // R
+                            d2 = 5'h1E;
+                            d1 = 5'h1E;
+                            d0 = 5'h1E;
+                        end
 
-            // LOCK state
-            3'd6: begin
-                d5 = 5'h11; // L
-                d4 = 5'h14; // O
-                d3 = 5'h0C; // C
-            end
+                        // PIN_SET
+                        3'd3: begin
+                            d5 = 5'h15; // P
+                            d4 = 5'h10; // I
+                            d3 = 5'h13; // N
+                            d2 = 5'h05; // S
+                            d1 = 5'h1E;
+                            d0 = 5'h1E;
+                        end
 
-            // DEPOSIT
-            3'd3: begin
-                d5 = 5'h0D; // D
-                d4 = 5'h0E; // E
-                d3 = 5'h15; // P
+                        // LOCKED
+                        3'd4: begin
+                            d5 = 5'h11; // L
+                            d4 = 5'h14; // O
+                            d3 = 5'h0C; // C
+                            d2 = 5'h1E;
+                            d1 = 5'h1E;
+                            d0 = 5'h1E;
+                        end
 
-                d2 = amt_hund;
-                d1 = amt_tens;
-                d0 = amt_ones;
-            end
+                        // Default: blank
+                        default: begin
+                            d5 = 5'h1E;
+                            d4 = 5'h1E;
+                            d3 = 5'h1E;
+                            d2 = 5'h1E;
+                            d1 = 5'h1E;
+                            d0 = 5'h1E;
+                        end
 
-            // WITHDRAW shown as "-DR"
-            3'd4: begin
-                d5 = 5'h18; // '-'
-                d4 = 5'h0D; // D
-                d3 = 5'h17; // R  (FIXED)
+                    endcase
+                end
 
-                d2 = amt_hund;
-                d1 = amt_tens;
-                d0 = amt_ones;
-            end
+                // BALANCE state
+                3'd5: begin
+                    d5 = 5'h0B; // B
+                    d4 = 5'h0A; // A
+                    d3 = 5'h11; // L
 
-        endcase
+                    d2 = bal_hund;
+                    d1 = bal_tens;
+                    d0 = bal_ones;
+                end
+
+                // LOCK state
+                3'd6: begin
+                    d5 = 5'h11; // L
+                    d4 = 5'h14; // O
+                    d3 = 5'h0C; // C
+                end
+
+                // DEPOSIT
+                3'd3: begin
+                    d5 = 5'h0D; // D
+                    d4 = 5'h0E; // E
+                    d3 = 5'h15; // P
+
+                    d2 = amt_hund;
+                    d1 = amt_tens;
+                    d0 = amt_ones;
+                end
+
+                // WITHDRAW
+                3'd4: begin
+                    d5 = 5'h18; // '-'
+                    d4 = 5'h0D; // D
+                    d3 = 5'h17; // R
+
+                    d2 = amt_hund;
+                    d1 = amt_tens;
+                    d0 = amt_ones;
+                end
+
+            endcase
+        end
     end
 
     // char encoding stage
