@@ -84,7 +84,6 @@ module FinalTop(
     wire [9:0] storedPin;
     wire pinValid;
     wire pinFail;
-    wire locked;
     wire loadPin;
 
     PinRegister pinReg(
@@ -109,7 +108,20 @@ module FinalTop(
         .rst(rst),
         .fail(pinFail),
         .success(pinValid),
-        .locked(locked)
+        .locked(pinLock)   // FIX: separate PIN lock
+    );
+
+    // LOCK TIMER SYSTEM
+    wire lockTimeout;
+    wire [2:0] lockSeconds;
+
+    LockTimer lockTimer(
+        .clk(clk),
+        .rst(rst),
+        .tick(tick),
+        .start(lockStart),
+        .timeout(lockTimeout),
+        .seconds(lockSeconds)
     );
 
     // FSM wires
@@ -119,10 +131,15 @@ module FinalTop(
     wire txnSuccess;
     wire txnError;
     wire inMenuState;
+
     wire timeout = 1'b0;
 
     wire [9:0] lastDeposit;
     wire [9:0] lastWithdraw;
+
+    // NEW FSM LOCK WIRES
+    wire inLock;
+    wire lockStart;
 
     ATMStateFSM fsm(
         .clk(clk),
@@ -132,6 +149,7 @@ module FinalTop(
         .pinValid(pinValid),
         .pinFail(pinFail),
         .timeout(timeout),
+        .lockTimeout(lockTimeout),   // FIXED
         .menuIndex(menuIndex),
         .amount(inputValue),
         .balance(balance),
@@ -146,12 +164,15 @@ module FinalTop(
         .lastDeposit(lastDeposit),
         .lastWithdraw(lastWithdraw),
 
-        .loadPin(loadPin)   // 🔥 FIXED: WAS MISSING
+        .loadPin(loadPin),
+
+        .inLock(inLock),          // FIXED
+        .lockStart(lockStart)     // FIXED
     );
 
     // Display Driver
     wire finalSuccess = txnSuccess | depositEn | withdrawEn;
-    wire finalError = txnError | pinFail | locked;
+    wire finalError = txnError | pinFail | pinLock | lockTimeout;
 
     ATMDisplayDriver display(
         .state(state),

@@ -9,6 +9,7 @@ module ATMStateFSM(
     input pinValid,         // signal indicating correct PIN entry
     input pinFail,          // signal indicating incorrect PIN entry
     input timeout,          // signal indicating PIN entry timeout
+    input lockTimeout,      // NEW: lock timer finished signal
     input [2:0] menuIndex,  // input from menu register to select menu options
     input [9:0] amount,     // transaction amount (from InputRegister)
     input [9:0] balance,    // current balance (from BalanceRegister)
@@ -23,7 +24,10 @@ module ATMStateFSM(
     output reg [9:0] lastDeposit,   // last successful deposit amount
     output reg [9:0] lastWithdraw,  // last successful withdraw amount
 
-    output reg loadPin      // enables storing new PIN
+    output reg loadPin,     // enables storing new PIN
+
+    output reg inLock,      // NEW: indicates LOCK state
+    output reg lockStart    // NEW: 1-cycle pulse to start lock timer
 );
 
     // state encoding (3-bit FSM states)
@@ -70,6 +74,8 @@ module ATMStateFSM(
         txnSuccess = 1'b0;          // default: no success signal
         txnError = 1'b0;            // default: no error signal
         loadPin = 1'b0;             // default: do not update PIN
+        lockStart = 1'b0;           // default: do not start lock timer
+        inLock = 1'b0;              // default: not in lock state
 
         case (currentState)
 
@@ -85,12 +91,17 @@ module ATMStateFSM(
             end
 
             LOCKED: begin
-                // locked state holds until reset (or future extension)
-                nextState = LOCKED;
+                // locked state holds until timer expires
+                inLock = 1'b1;
+
+                if (lockTimeout)
+                    nextState = IDLE;
+                else
+                    nextState = LOCKED;
             end
 
             PIN_SET: begin
-                // FIX: store new PIN on ENTER
+                // store new PIN on ENTER
                 if (enterPulse) begin
                     loadPin = 1'b1;
                     nextState = MENU;
