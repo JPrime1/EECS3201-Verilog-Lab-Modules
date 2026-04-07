@@ -120,12 +120,12 @@ module ATMStateFSM(
             end
 
             WITHDRAW: begin
-                if (enterPulse && (balance >= amount)) begin
+                if (enterPulse && (balance > amount)) begin
                     withdrawEn = 1'b1;
                     txnSuccess = 1'b1;
                     nextState = MENU;
                 end
-                else if (enterPulse && (balance < amount)) begin
+                else if (enterPulse && (balance <= amount)) begin
                     txnError = 1'b1;
                     nextState = WITHDRAW;
                 end

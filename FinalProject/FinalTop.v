@@ -46,6 +46,9 @@ module FinalTop(
 
     // Input Register
     wire [9:0] inputValue;
+    // NEW: live switch value for real-time display
+    wire [9:0] liveAmount;
+    assign liveAmount = sw;
 
     InputRegister inputReg(
         .clk(clk),
@@ -157,7 +160,7 @@ module FinalTop(
         .lastDeposit(lastDeposit),  
         .lastWithdraw(lastWithdraw),
         .balance(balance),
-        .amount(inputValue),
+        .amount(liveAmount), // display live switch value for real-time feedback
         .txnSuccess(finalSuccess),
         .txnError(finalError),
 
