@@ -184,6 +184,9 @@ module FinalTop(
         .txnSuccess(finalSuccess),
         .txnError(finalError),
 
+        .lockSeconds(lockSeconds),
+        .attemptCount(attemptCount),
+
         .HEX0(HEX0),
         .HEX1(HEX1),
         .HEX2(HEX2),

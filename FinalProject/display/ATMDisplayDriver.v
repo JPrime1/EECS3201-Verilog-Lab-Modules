@@ -11,6 +11,9 @@ module ATMDisplayDriver(
     input txnSuccess,         // transaction success flag
     input txnError,           // transaction error flag
 
+    input [2:0] lockSeconds,
+    input [2:0] attemptCount,
+
     output [7:0] HEX0,
     output [7:0] HEX1,
     output [7:0] HEX2,
@@ -134,9 +137,10 @@ module ATMDisplayDriver(
                             d5 = 5'h11; // L
                             d4 = 5'h14; // O
                             d3 = 5'h0C; // C
-                            d2 = 5'h1E;
-                            d1 = 5'h1E;
-                            d0 = 5'h1E;
+
+                            d2 = lockSeconds;   // seconds
+                            d1 = 5'h1E;         // blank
+                            d0 = attemptCount;  // attempt countdown
                         end
 
                         // Default: blank
