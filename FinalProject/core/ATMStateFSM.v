@@ -7,7 +7,7 @@ module ATMStateFSM(
     input enterPulse,       // ENTER button pulse (action confirm)
     input nextPulse,        // NEXT button pulse (menu navigation / back)
     input pinValid,         // signal indicating correct PIN entry
-    input pinFail,         // signal indicating incorrect PIN entry
+    input pinFail,          // signal indicating incorrect PIN entry
     input timeout,          // signal indicating PIN entry timeout
     input [2:0] menuIndex,  // input from menu register to select menu options
     input [9:0] amount,     // transaction amount (from InputRegister)
@@ -21,7 +21,9 @@ module ATMStateFSM(
     output reg inMenuState, // indicates when system is in MENU
 
     output reg [9:0] lastDeposit,   // last successful deposit amount
-    output reg [9:0] lastWithdraw   // last successful withdraw amount
+    output reg [9:0] lastWithdraw,  // last successful withdraw amount
+
+    output reg loadPin      // enables storing new PIN
 );
 
     // state encoding (3-bit FSM states)
@@ -48,14 +50,14 @@ module ATMStateFSM(
         else begin
             currentState <= nextState;
 
-            // NEW: store last successful transactions using control signals
+            // store last successful deposit
             if (depositEn)
                 lastDeposit <= amount;
 
+            // store last successful withdraw
             if (withdrawEn)
                 lastWithdraw <= amount;
         end
-
     end
 
     // combinational next-state logic + output logic
@@ -67,6 +69,7 @@ module ATMStateFSM(
         withdrawEn = 1'b0;          // default: no withdraw
         txnSuccess = 1'b0;          // default: no success signal
         txnError = 1'b0;            // default: no error signal
+        loadPin = 1'b0;             // default: do not update PIN
 
         case (currentState)
 
@@ -87,8 +90,14 @@ module ATMStateFSM(
             end
 
             PIN_SET: begin
-                if (enterPulse) nextState = MENU;
-                else nextState = PIN_SET;
+                // FIX: store new PIN on ENTER
+                if (enterPulse) begin
+                    loadPin = 1'b1;
+                    nextState = MENU;
+                end
+                else begin
+                    nextState = PIN_SET;
+                end
             end
 
             MENU: begin
@@ -120,23 +129,17 @@ module ATMStateFSM(
             end
 
             WITHDRAW: begin
-
-                // FIXED: allow withdraw when balance == amount
                 if (enterPulse && (balance >= amount)) begin
                     withdrawEn = 1'b1;
                     txnSuccess = 1'b1;
                     nextState = MENU;
                 end
-
-                // FIXED: error only when strictly less
                 else if (enterPulse && (balance < amount)) begin
                     txnError = 1'b1;
                     nextState = WITHDRAW;
                 end
-
                 else if (nextPulse) nextState = MENU;
                 else nextState = WITHDRAW;
-
             end
 
             default: begin

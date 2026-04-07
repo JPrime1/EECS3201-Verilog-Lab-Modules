@@ -69,7 +69,7 @@ module FinalTop(
         .inMenuState(inMenuState)
     );
 
-    // Balance Register (moved before FSM usage safety)
+    // Balance Register
     wire [9:0] balance;
 
     BalanceRegister balanceReg(
@@ -85,12 +85,7 @@ module FinalTop(
     wire pinValid;
     wire pinFail;
     wire locked;
-
-    // FIX: removed unsafe state comparison in top module
     wire loadPin;
-
-    // FIX: PIN load should depend on FSM state (safe method via state == PIN_SET)
-    assign loadPin = enterPulse & (state == 3'd7);
 
     PinRegister pinReg(
         .clk(clk),
@@ -123,8 +118,11 @@ module FinalTop(
     wire withdrawEn;
     wire txnSuccess;
     wire txnError;
-    wire inMenuState;   // FSM: to indicate when in menu state
+    wire inMenuState;
     wire timeout = 1'b0;
+
+    wire [9:0] lastDeposit;
+    wire [9:0] lastWithdraw;
 
     ATMStateFSM fsm(
         .clk(clk),
@@ -144,23 +142,24 @@ module FinalTop(
         .txnError(txnError),
         .state(state),
         .inMenuState(inMenuState),
+
         .lastDeposit(lastDeposit),
-        .lastWithdraw(lastWithdraw)
+        .lastWithdraw(lastWithdraw),
+
+        .loadPin(loadPin)   // 🔥 FIXED: WAS MISSING
     );
 
     // Display Driver
     wire finalSuccess = txnSuccess | depositEn | withdrawEn;
     wire finalError = txnError | pinFail | locked;
-    wire [9:0] lastDeposit;
-    wire [9:0] lastWithdraw;
 
     ATMDisplayDriver display(
         .state(state),
         .menuIndex(menuIndex),
-        .lastDeposit(lastDeposit),  
+        .lastDeposit(lastDeposit),
         .lastWithdraw(lastWithdraw),
         .balance(balance),
-        .amount(liveAmount), // display live switch value for real-time feedback
+        .amount(liveAmount),
         .txnSuccess(finalSuccess),
         .txnError(finalError),
 

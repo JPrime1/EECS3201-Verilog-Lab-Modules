@@ -16,14 +16,14 @@ module BalanceRegister(
     
     always @(posedge clk) begin
 
-        //no reset for balance, it retains value until changed by deposit/withdraw
+        // no reset for balance, it retains value until changed by deposit/withdraw
 
         // deposit operation
         if (depositEn) begin
             balance <= balance + amount;
         end
 
-        // withdraw operation (assumes valid check done outside)
+        // withdraw operation (only if deposit not active)
         else if (withdrawEn) begin
             balance <= balance - amount;
         end
