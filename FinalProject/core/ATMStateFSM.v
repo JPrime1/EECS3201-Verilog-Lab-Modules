@@ -48,14 +48,14 @@ module ATMStateFSM(
         else begin
             currentState <= nextState;
 
-            // store last successful deposit
-            if (currentState == DEPOSIT && enterPulse)
+            // NEW: store last successful transactions using control signals
+            if (depositEn)
                 lastDeposit <= amount;
 
-            // store last successful withdraw
-            if (currentState == WITHDRAW && enterPulse && (balance >= amount))
+            if (withdrawEn)
                 lastWithdraw <= amount;
         end
+
     end
 
     // combinational next-state logic + output logic
@@ -120,17 +120,23 @@ module ATMStateFSM(
             end
 
             WITHDRAW: begin
-                if (enterPulse && (balance > amount)) begin
+
+                // FIXED: allow withdraw when balance == amount
+                if (enterPulse && (balance >= amount)) begin
                     withdrawEn = 1'b1;
                     txnSuccess = 1'b1;
                     nextState = MENU;
                 end
-                else if (enterPulse && (balance <= amount)) begin
+
+                // FIXED: error only when strictly less
+                else if (enterPulse && (balance < amount)) begin
                     txnError = 1'b1;
                     nextState = WITHDRAW;
                 end
+
                 else if (nextPulse) nextState = MENU;
                 else nextState = WITHDRAW;
+
             end
 
             default: begin

@@ -22,9 +22,9 @@ module ATMDisplayDriver(
     // internal character codes (5-bit IDs)
     reg [4:0] d0, d1, d2, d3, d4, d5;
 
-    // digit extraction (0–999 safe display)
-    reg [3:0] bal_hund, bal_tens, bal_ones;
-    reg [3:0] amt_hund, amt_tens, amt_ones;
+    // digit extraction (0–99 safe display)
+    reg [3:0] bal_tens, bal_ones;
+    reg [3:0] amt_tens, amt_ones;
 
     always @(*) begin
 
@@ -36,13 +36,13 @@ module ATMDisplayDriver(
         d4 = 5'h1E;
         d5 = 5'h1E;
 
-        // 3-digit split
-        bal_hund = balance / 100;
-        bal_tens = (balance / 10) % 10;
+        // 2-digit split (00–99 only)
+        // balance digits
+        bal_tens = (balance % 100) / 10;
         bal_ones = balance % 10;
 
-        amt_hund = amount / 100;
-        amt_tens = (amount / 10) % 10;
+        // amount digits (live switch input)
+        amt_tens = (amount % 100) / 10;
         amt_ones = amount % 10;
 
         // PRIORITY OVERRIDE: TRANSACTION FEEDBACK
@@ -175,28 +175,28 @@ module ATMDisplayDriver(
 
                 // DEPOSIT
                 3'd3: begin
-                     d5 = 5'h11; // L
+                    d5 = 5'h11; // L
 
-                    d4 = (lastDeposit / 10) % 10; // last deposit tens
+                    d4 = (lastDeposit % 100) / 10;; // last deposit tens
                     d3 = lastDeposit % 10;        // last deposit ones
 
                     d2 = 5'h0C; // C
 
-                    d1 = (amount / 10) % 10;      // current deposit tens
-                    d0 = amount % 10;             // current deposit ones
+                    d1 = amt_tens;       // current deposit tens
+                    d0 = amt_ones;             // current deposit ones
                 end
 
                 // WITHDRAW
                 3'd4: begin
                     d5 = 5'h11; // LAST
 
-                    d4 = (lastWithdraw / 10) % 10; // last withdraw tens
+                    d4 = (lastWithdraw % 100) / 10; // last withdraw tens
                     d3 = lastWithdraw % 10;        // last withdraw ones
 
                     d2 = 5'h0C; // Current
 
-                    d1 = (amount / 10) % 10;       // current withdraw tens
-                    d0 = amount % 10;              // current withdraw ones
+                    d1 = amt_tens;       // current withdraw tens
+                    d0 = amt_ones;              // current withdraw ones
                 end
 
             endcase
