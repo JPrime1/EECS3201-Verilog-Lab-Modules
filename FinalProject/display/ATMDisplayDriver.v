@@ -4,6 +4,8 @@
 module ATMDisplayDriver(
     input [3:0] state,        // FSM state
     input [2:0] menuIndex,    // menu selection index
+    input [9:0] lastDeposit,  // NEW: last successful deposit amount (for future display use)
+    input [9:0] lastWithdraw, // NEW: last successful withdraw amount (for future display use)
     input [9:0] balance,      // account balance
     input [9:0] amount,       // transaction amount
     input txnSuccess,         // transaction success flag
@@ -46,8 +48,8 @@ module ATMDisplayDriver(
         // PRIORITY OVERRIDE: TRANSACTION FEEDBACK
         if (txnError) begin
             d5 = 5'h0E; // E
-            d4 = 5'h17; // R
-            d3 = 5'h17; // R
+            d4 = 5'h16; // R
+            d3 = 5'h16; // R
             d2 = 5'h1E;
             d1 = 5'h1E;
             d0 = 5'h1E;
@@ -68,14 +70,19 @@ module ATMDisplayDriver(
                     d5 = 5'h15; // P
                     d4 = 5'h10; // I
                     d3 = 5'h13; // N
+                    d2 = 5'h1E;
+                    d1 = 5'h1E;
+                    d0 = 5'h1E;
                 end
 
-                // PIN Set state
-                3'd7: begin
-                    d5 = 5'h15; // P
-                    d4 = 5'h10; // I
-                    d3 = 5'h13; // N
-                    d2 = 5'h05; // S
+                // SET PIN screen: clear instruction to user
+                3'd7: begin                    
+                    d5 = 5'h05; // S
+                    d4 = 5'h0E; // E
+                    d3 = 5'h1E; // Blank
+                    d2 = 5'h15; // P
+                    d1 = 5'h10; // I
+                    d0 = 5'h13; // N
                 end
 
                 // MENU state
@@ -106,7 +113,7 @@ module ATMDisplayDriver(
                         3'd2: begin
                             d5 = 5'h18; // -
                             d4 = 5'h0D; // D
-                            d3 = 5'h17; // R
+                            d3 = 5'h16; // R
                             d2 = 5'h1E;
                             d1 = 5'h1E;
                             d0 = 5'h1E;
@@ -117,9 +124,9 @@ module ATMDisplayDriver(
                             d5 = 5'h15; // P
                             d4 = 5'h10; // I
                             d3 = 5'h13; // N
-                            d2 = 5'h05; // S
-                            d1 = 5'h1E;
-                            d0 = 5'h1E;
+                            d2 = 5'h18; // -
+                            d1 = 5'h05; // S
+                            d0 = 5'h15; // P
                         end
 
                         // LOCKED
@@ -151,7 +158,7 @@ module ATMDisplayDriver(
                     d4 = 5'h0A; // A
                     d3 = 5'h11; // L
 
-                    d2 = bal_hund;
+                    d2 = 5'h1E; // Blank
                     d1 = bal_tens;
                     d0 = bal_ones;
                 end
@@ -161,28 +168,35 @@ module ATMDisplayDriver(
                     d5 = 5'h11; // L
                     d4 = 5'h14; // O
                     d3 = 5'h0C; // C
+                    d2 = 5'h1E;
+                    d1 = 5'h1E;
+                    d0 = 5'h1E;
                 end
 
                 // DEPOSIT
                 3'd3: begin
-                    d5 = 5'h0D; // D
-                    d4 = 5'h0E; // E
-                    d3 = 5'h15; // P
+                     d5 = 5'h11; // L
 
-                    d2 = amt_hund;
-                    d1 = amt_tens;
-                    d0 = amt_ones;
+                    d4 = (lastDeposit / 10) % 10; // last deposit tens
+                    d3 = lastDeposit % 10;        // last deposit ones
+
+                    d2 = 5'h0C; // C
+
+                    d1 = (amount / 10) % 10;      // current deposit tens
+                    d0 = amount % 10;             // current deposit ones
                 end
 
                 // WITHDRAW
                 3'd4: begin
-                    d5 = 5'h18; // '-'
-                    d4 = 5'h0D; // D
-                    d3 = 5'h17; // R
+                    d5 = 5'h11; // LAST
 
-                    d2 = amt_hund;
-                    d1 = amt_tens;
-                    d0 = amt_ones;
+                    d4 = (lastWithdraw / 10) % 10; // last withdraw tens
+                    d3 = lastWithdraw % 10;        // last withdraw ones
+
+                    d2 = 5'h0C; // Current
+
+                    d1 = (amount / 10) % 10;       // current withdraw tens
+                    d0 = amount % 10;              // current withdraw ones
                 end
 
             endcase

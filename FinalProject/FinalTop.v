@@ -140,16 +140,22 @@ module FinalTop(
         .txnSuccess(txnSuccess),
         .txnError(txnError),
         .state(state),
-        .inMenuState(inMenuState)
+        .inMenuState(inMenuState),
+        .lastDeposit(lastDeposit),
+        .lastWithdraw(lastWithdraw)
     );
 
     // Display Driver
     wire finalSuccess = txnSuccess | depositEn | withdrawEn;
     wire finalError = txnError | pinFail | locked;
+    wire [9:0] lastDeposit;
+    wire [9:0] lastWithdraw;
 
     ATMDisplayDriver display(
         .state(state),
         .menuIndex(menuIndex),
+        .lastDeposit(lastDeposit),  
+        .lastWithdraw(lastWithdraw),
         .balance(balance),
         .amount(inputValue),
         .txnSuccess(finalSuccess),
