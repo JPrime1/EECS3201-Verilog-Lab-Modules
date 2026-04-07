@@ -73,9 +73,10 @@ module ATMDisplayDriver(
                     d5 = 5'h15; // P
                     d4 = 5'h10; // I
                     d3 = 5'h13; // N
-                    d2 = 5'h1E;
-                    d1 = 5'h1E;
-                    d0 = 5'h1E;
+
+                    d2 = lockSeconds;     // countdown timer
+                    d1 = 5'h1E;          // blank
+                    d0 = attemptCount;   // attempts
                 end
 
                 // SET PIN screen: clear instruction to user
@@ -138,9 +139,9 @@ module ATMDisplayDriver(
                             d4 = 5'h14; // O
                             d3 = 5'h0C; // C
 
-                            d2 = lockSeconds;   // seconds
-                            d1 = 5'h1E;         // blank
-                            d0 = attemptCount;  // attempt countdown
+                            d2 = 5'h1E;
+                            d1 = 5'h1E;
+                            d0 = 5'h1E;
                         end
 
                         // Default: blank
